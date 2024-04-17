@@ -53,5 +53,68 @@ The latest version of uTorrent for Linux was released for Ubuntu 13.04, but we c
    ```
    admin
    ```
-# Now u can using the uTorrent
+Now u can using the uTorrent
 ![image](https://github.com/bimacakra30/Torrent/assets/160693155/97ede315-b723-4111-8600-c404ef270775)
+
+
+# Auto Start uTorrent Server on Ubuntu
+1. To enable auto start, we can create a systemd service with the following command. (Nano is a command line text editor.)
+   ```
+   sudo nano /etc/systemd/system/utserver.service
+   ```
+2. Put the following text into the file. Note that since we are going to use systemd to start uTorrent, we don’t need the -daemon option in the start command.
+   ```
+   [Unit]
+   Description=uTorrent Server
+   After=network.target
+   
+   [Service]
+   Type=simple
+   User=utorrent
+   Group=utorrent
+   ExecStart=/usr/bin/utserver -settingspath /opt/utorrent-server-alpha-v3_3/
+   ExecStop=/usr/bin/pkill utserver
+   Restart=always
+   SyslogIdentifier=uTorrent Server
+   
+   [Install]
+   WantedBy=multi-user.target
+   ```
+3. Press Ctrl+O, then press Enter to save the file. Press Ctrl+X to exit. Then reload systemd.
+   ```
+   sudo systemctl daemon-reload
+   ```
+4. It’s not recommended to run uTorrent server as root, so we’ve specified in the service file that uTorrent server should run as the utorrent user and group, which have no root privileges. Create the utorrent system user and group with the following command.
+   ```
+   sudo adduser --system utorrent
+   ```
+   ```   
+   sudo addgroup --system utorrent
+   ```
+5. Add the utorrent user to the utorrent group.
+   ```
+   sudo adduser utorrent utorrent
+   ```
+6. Next, Stop the current uTorrent server.
+   ```
+   sudo pkill utserver
+   ```
+7. Use the systemd service to start uTorrent server.
+   ```
+   Enable auto start at boot time.
+   ```
+8. Enable auto start at boot time.
+   ```
+   sudo systemctl enable utserver
+   ```
+9. Now check utserver status.
+   ```
+   systemctl status utserver
+   ```
+![image](https://github.com/bimacakra30/Torrent/assets/160693155/8fc29795-8ac5-4477-b480-c7f95741adb9)
+
+   We can see that auto start is enabled and uTorrent server is running. When creating the utorrent user, a home directory was also created at /home/utorrent/. It’s recommended that you set this home directory as your torrent download directory because the utorrent user has write permission. We also need to make utorrent as the owner of the /opt/utorrent-server-alpha-v3_3/ directory by executing the following command.
+   ```
+   sudo chown utorrent:utorrent /opt/utorrent-server-alpha-v3_3/ -R
+   ```
+You may want to use a VPN to hide your IP address when downloading torrents.
